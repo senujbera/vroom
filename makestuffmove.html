@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Car Movement</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #image {
+            position: absolute;
+            width: 100px; /* Set a default size for the image */
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="upload" accept="image/*">
+    <img id="image" src="" alt="Uploaded Image">
+    <script>
+        const upload = document.getElementById('upload');
+        const image = document.getElementById('image');
+
+        let posX = 0, posY = 0;
+        const speed = 5;
+        let keys = {};
+
+        function updatePosition() {
+            if (keys['ArrowUp']) posY -= speed;
+            if (keys['ArrowDown']) posY += speed;
+            if (keys['ArrowLeft']) posX -= speed;
+            if (keys['ArrowRight']) posX += speed;
+
+            // Ensure the image stays within bounds of the viewport
+            const imageWidth = image.clientWidth;
+            const imageHeight = image.clientHeight;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            posX = Math.max(0, Math.min(posX, viewportWidth - imageWidth));
+            posY = Math.max(0, Math.min(posY, viewportHeight - imageHeight));
+
+            image.style.left = `${posX}px`;
+            image.style.top = `${posY}px`;
+
+            requestAnimationFrame(updatePosition);
+        }
+
+        upload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    image.src = event.target.result;
+                    image.onload = () => {
+                        // Center the image initially
+                        const imageWidth = image.clientWidth;
+                        const imageHeight = image.clientHeight;
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+
+                        posX = (viewportWidth / 2) - (imageWidth / 2);
+                        posY = (viewportHeight / 2) - (imageHeight / 2);
+
+                        image.style.left = `${posX}px`;
+                        image.style.top = `${posY}px`;
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        updatePosition();
+    </script>
+</body>
+</html>
